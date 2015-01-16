@@ -1,8 +1,7 @@
-<?
-namespace gearbox;
-include('../core/gears.php');
+<?php
+include('../classes/Graphic.php');
 
-class gui extends graphic{
+class gui extends Graphic{
 
     function rectangleOutlined($x1,$y1,$x2,$y2,$color,$outlineColor){
 

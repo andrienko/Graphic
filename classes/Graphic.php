@@ -1,6 +1,4 @@
-<?
-
-namespace gearbox;
+<?php
 
 define('EFFECT_GAUSSIAN_BLUR',2);
 define('EFFECT_EMBOSS',4);
@@ -11,12 +9,13 @@ define('EFFECT_EDGES',64);
 define('EFFECT_SCANLINE',128);
 define('EFFECT_RIPPLE',256);
 
-/** Lame graphic class
+/**
+ * Lame graphic class
  *  A part of gearbox framework.
  *  used mainly for captcha generation and thumbnail creation
  */
 
-class graphic{
+class Graphic{
 
     public $image;
 
@@ -58,7 +57,7 @@ class graphic{
         return $this->width;
     }
 
-    function updateSize(){
+    private function updateSize(){
         $this->width=imagesx($this->image);
         $this->height=imagesy($this->image);
     }
@@ -98,7 +97,6 @@ class graphic{
 
     private function repeat($image,$x,$y){
         $sw=imagesx($image);$sh=imagesy($image);
-
         $temp=imagecreatetruecolor($x*$sw,$y*$sh);
         imagesettile($temp,$image);
         imagefill($temp,0,0,IMG_COLOR_TILED);
@@ -108,12 +106,9 @@ class graphic{
     private function shift($image,$x,$y){
 
         $sw=imagesx($image);$sh=imagesy($image);
-
         $temp=imagecreatetruecolor($sw,$sh);
 
-
         // TODO: Make this less lame
-
         imagecopy($temp,$image,$x,$y,0,0,$sw,$sh);
         imagecopy($temp,$image,$x-$sw,$y,0,0,$sw,$sh);
         imagecopy($temp,$image,$x,$y-$sh,0,0,$sw,$sh);

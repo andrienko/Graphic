@@ -1,6 +1,5 @@
 <?php
-namespace gearbox;
-include('../core/gears.php');
+include('../classes/Graphic.php');
 
 function go($x,$y,graphic $maze,$white,$prev=null){
 

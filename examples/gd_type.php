@@ -1,6 +1,5 @@
-<?
-namespace gearbox;
-include('../core/gears.php');
+<?php
+include('../classes/Graphic.php');
 
 $text=new graphic(256,128);
 $text->fill(0,0,$text->colorRgb(128,128,255));

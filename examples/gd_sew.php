@@ -1,6 +1,5 @@
-<?
-namespace gearbox;
-include('../core/gears.php');
+<?php
+include('../classes/Graphic.php');
 
 $pattern=new graphic(4,4);
 
