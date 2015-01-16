@@ -184,6 +184,65 @@ class Graphic{
         return array($axis_x+$radius*cos(deg2rad($angle)),$axis_y+$radius*sin(deg2rad($angle)));
     }
 
+    static function cardinal_points($points,$tension=0.5,$steps=20) {
+
+        $return_points = array();
+        $tangents = array();
+
+        // calculate tangents
+        $previous_point = false;
+        for($i=0;$i<count($points);$i++) {
+            $px = $points[$i][0];
+            $py = $points[$i][1];
+            if (isset($points[$i+1]) && isset($points[$i-1])) {
+                $tx = ($tension * (($points[$i+1][0]-$px) - ($points[$i-1][0]-$px)));
+                $ty = ($tension * (($points[$i+1][1]-$py) - ($points[$i-1][1]-$py)));
+            } elseif (isset($points[$i+1])) {
+                $tx = ($tension * (($points[$i+1][0]-$px) - ($points[$i][0]-$px)));
+                $ty = ($tension * (($points[$i+1][1]-$py) - ($points[$i][1]-$py)));
+            } elseif (isset($points[$i-1])) {
+                $tx = ($tension * (($points[$i][0]-$px) - ($points[$i-1][0]-$px)));
+                $ty = ($tension * (($points[$i][1]-$py) - ($points[$i-1][1]-$py)));
+            }
+            $tangents[] = array($tx,$ty);
+            $previous_x = $px;
+            $previous_y = $py;
+        }
+
+        // interpolate
+        for($i=0;$i<count($tangents)-1;$i++) {
+            list($p0x,$p0y)=$points[$i];
+            list($p1x,$p1y)=$points[$i+1];
+            list($t0x,$t0y)=$tangents[$i];
+            list($t1x,$t1y)=$tangents[$i+1];
+            $previous_x = $p0x;
+            $previous_y = $p0y;
+            $return_points[] = array($p0x,$p0y);
+            for ($t=0; $t < $steps; $t++) {
+                $s = $t / $steps;    // scale s to go from 0 to 1
+                $h1 = 2*pow($s,3) - 3*pow($s,2) + 1;
+                $h2 = pow($s,3) - 2*pow($s,2) + $s;
+                $h3 = -2*pow($s,3) + 3*pow($s,2);
+                $h4 = pow($s,3) - pow($s,2);
+                $x = $h1*$p0x+$h2*$t0x+$h3*$p1x+$h4*$t1x;
+                $y = $h1*$p0y+$h2*$t0y+$h3*$p1y+$h4*$t1y;
+                $return_points[] = array($x,$y);
+                $previous_x = $x;
+                $previous_y = $y;
+            }
+            $return_points[] = array($p1x,$p1y);
+        }
+
+        $resulting_points = array();
+        foreach($return_points as $pair) {
+            $resulting_points[]=$pair[0];
+            $resulting_points[]=$pair[1];
+        }
+
+
+        return $resulting_points;
+    }
+
     /**
      * Converts HSV to RGB
      * @param int $h From 0 to 359
@@ -263,6 +322,7 @@ class Graphic{
             if(isset($y1) & isset($x2) & isset($y2))imageline($this->image,$x1,$y1,$x2,$y2,isset($color)?$color:$this->color);
             else return;
         }
+        return $this;
 
     }
 
@@ -279,12 +339,19 @@ class Graphic{
 
     function setPixel($x,$y,$color=null){
         imagesetpixel($this->image,$x,$y,isset($color)?$color:$this->color);
+        return $this;
     }
 
     function polygon($points,$color=null,$pointlimit=null,$filled=true){
         if($filled===true)imagefilledpolygon($this->image,$points,isset($pointlimit)?$pointlimit:count($points)/2,isset($color)?$color:$this->color);
         else imagepolygon($this->image,$points,isset($pointlimit)?$pointlimit:count($points)/2,isset($color)?$color:$this->color);
+        return $this;
+    }
 
+    function curve($points,$color=null,$filled=false,$tension=0.5,$steps=20,$pointlimit=null){
+        $points = self::cardinal_points($points,$tension,$steps);
+        if($filled)$this->polygon($points,$color,$pointlimit,true);
+        return $this->line($points,null,null,null,$color);
     }
 
     function rectangle($x1,$y1,$x2,$y2=null,$color=null,$filled=true){
@@ -295,6 +362,7 @@ class Graphic{
     function arc($x,$y,$radius,$radius2,$start,$end,$color=null,$filled=true){
         if($filled===false)imagearc($this->image,$x,$y,$radius*2,isset($radius2)?$radius2*2:$radius*2,$start,$end,isset($color)?$color:$this->color);
         else imagefilledarc($this->image,$x,$y,$radius*2,isset($radius2)?$radius2*2:$radius*2,$start,$end,isset($color)?$color:$this->color,$filled===true?IMG_ARC_PIE:$filled);
+        return $this;
     }
 
     function polygonRegular($x,$y,$radius=10,$sides=5,$color=null,$angle=0,$filled=true){
@@ -303,6 +371,7 @@ class Graphic{
             $points=array_merge($points,graphic::pointRotate($x,$y,$radius,$a+$angle));
         }
         $this->polygon($points,isset($color)?$color:$this->color,null,$filled);
+        return $this;
     }
 
     function string($text,$x=1,$y=null,$fontsize=1,$color=null,$fontfile=null,$angle=0){//TODO: Add unicode
