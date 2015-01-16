@@ -119,7 +119,17 @@ class Graphic{
     }
 
     // -- Colors section
-    function colorRgb($r,$g=null,$b=null,$alpha=null){
+
+
+    /**
+     * Creates color from RGB values.
+     * @param integer $r Red value (from 0 to 255). If other colors passed are null - they will be set to red value.
+     * @param integer $g
+     * @param integer $b
+     * @param integer $alpha Alpha from 0 to 127
+     * @return int
+     */
+    function colorRgb($r=255,$g=null,$b=null,$alpha=null){
         if(!isset($g) | !isset($b)){
             $g=$r;
             $b=$r;
@@ -129,11 +139,25 @@ class Graphic{
         return $this->color;
     }
 
+    /**
+     * Creates color from HSV values.
+     * @param integer $h Hue value. From 0 to 359
+     * @param int $s Saturation value. From 0 to 255
+     * @param int $v Value value. From 0 to 255.
+     * @param null $alpha Alpha. From 0 to 127
+     * @return int
+     */
     function colorHsv($h,$s=255,$v=255,$alpha=null){
-        list($r,$g,$b)=graphic::hsv2rgb($h,$s,$v);
+        list($r,$g,$b)=self::hsv2rgb($h,$s,$v);
         return $this->colorRgb($r,$g,$b,$alpha);
     }
 
+    /**
+     * Creates color from hex string.
+     * @param $hex
+     * @param null $alpha
+     * @return int
+     */
     function colorHex($hex,$alpha=null){
         $hex=preg_replace("/[^0-9a-fA-F]/", '', $hex);
         if(strlen($hex)>=6)list($r,$g,$b)=array(hexdec(substr($hex,0,2)),hexdec(substr($hex,2,2)),hexdec(substr($hex,4,2)));
@@ -143,8 +167,13 @@ class Graphic{
 
     }
 
-    function colorPattern($filename){//TODO:Fix this crap
-
+    /**
+     * Sets the tile pattern as image from file
+     * @param string $filename File to be loaded as pattern
+     * @return int Returns IMG_COLOR_TILED
+     */
+    // TODO:Fix this crap
+    function colorPattern($filename){
         imagesettile($this->image,$this->imageFromFile($filename));
         $this->color=IMG_COLOR_TILED;
         return IMG_COLOR_TILED;
@@ -155,6 +184,13 @@ class Graphic{
         return array($axis_x+$radius*cos(deg2rad($angle)),$axis_y+$radius*sin(deg2rad($angle)));
     }
 
+    /**
+     * Converts HSV to RGB
+     * @param int $h From 0 to 359
+     * @param int $s From 0 to 255
+     * @param int $v From 0 to 255
+     * @return array Returns array(r,g,b)
+     */
     static function hsv2rgb($h, $s=255, $v=255){
         while($h<0)$h+=360;while($h>=360)$h-=360;if($v>255)$v=255;if($v<0)$v=0;
         $s /= 255.0;
@@ -178,16 +214,39 @@ class Graphic{
 
     // -- Function wrappers section
 
+    /**
+     * Draw an ellipse
+     * @param integer $x Center X coordinate
+     * @param integer $y Center Y coordinate
+     * @param integer $radius Radius
+     * @param integer $radius2 Second radius
+     * @param integer $color che color
+     * @param bool $filled Is ellipse filled? (false by default)
+     */
     function ellipse($x,$y,$radius,$radius2=null,$color=null,$filled=false){
         if($filled===true)imagefilledellipse($this->image,$x,$y,$radius*2,isset($radius2)?$radius2*2:$radius*2,isset($color)?$color:$this->color);
         else imageellipse($this->image,$x,$y,$radius*2,isset($radius2)?$radius2*2:$radius*2,isset($color)?$color:$this->color);
 
     }
 
+    /**
+     * Bucket fill
+     * @param integer $x X coordinate
+     * @param integer $y Y coordinate
+     * @param integer $color color
+     */
     function fill($x,$y,$color=null){
         imagefill($this->image,$x,$y,isset($color)?$color:$this->color);
     }
 
+    /**
+     *
+     * @param $x1
+     * @param null $y1
+     * @param null $x2
+     * @param null $y2
+     * @param null $color
+     */
     function line($x1,$y1=null,$x2=null,$y2=null,$color=null){
         if(is_array($x1)){
             $points=floor(count($x1)/2.0);
