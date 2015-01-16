@@ -1,25 +1,24 @@
-<?
-namespace gearbox;
-include('../core/gears.php');
+<?php
+include('../classes/Graphic.php');
 
-error_reporting(0);
+//error_reporting(0);
 
 $alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 _.,?!():<>=+-*/${}&%;"[]\'~^';
 //$alphabet="ABCDEFGH";
 //$alphabet=' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRTSUVWXYZ[\\]^_`{|}~';
-//$alphabet='АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
+$alphabet='АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
 //$alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ346789';
 //$alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZБГДЖИЙЛПУФЦЧШЩЪЫЬЭЮЯ0123456789., _:!?*';
 
 $cell_num=64;
 $cell_size=16;
-$font='fonts/ubuntumonor.ttf';
+$font='../assets/ubuntumonor.ttf';
 
-$total=pow(u::strlen($alphabet),2);
-$total_alphabet=u::strlen($alphabet);
+$total=pow(mb_strlen($alphabet),2);
+$total_alphabet=mb_strlen($alphabet);
 $total_square_pages=ceil($total/($cell_num*$cell_num));
 
-$matrix=new graphic($cell_size,$cell_size);
+$matrix=new Graphic($cell_size,$cell_size);
 //$matrix->rectangle(0,0,$cell_size,$cell_size,$matrix->colorRgb(0,0,90),false);
 $matrix->tile($cell_num,$cell_num * $total_square_pages);
 
@@ -45,7 +44,7 @@ for($n=0;$n<$total;$n++){
     $ya=floor($n/$total_alphabet);
     //echo($n.':'.$xn.'x'.$yn.':'.$xa.'x'.$ya.'; ');
 
-    $matrix->string(u::substr($alphabet,$ya,1).u::substr($alphabet,$xa,1),$x,$y,$fs,null,$font);
+    $matrix->string(mb_substr($alphabet,$ya,1).mb_substr($alphabet,$xa,1),$x,$y,$fs,null,$font);
 }
 //echo(u::substr($alphabet,0,1));
 //$matrix->string($total_alphabet.' - '.$total,0,$matrix->getHeight(),23,$matrix->colorRgb(255,255,255,50),$font);

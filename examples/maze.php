@@ -1,7 +1,7 @@
 <?php
 include('../classes/Graphic.php');
 
-function go($x,$y,graphic $maze,$white,$prev=null){
+function go($x,$y,Graphic $maze,$white,$prev=null){
 
     $mx=$maze->getWidth();
     $my=$maze->getHeight();
@@ -42,7 +42,7 @@ function go($x,$y,graphic $maze,$white,$prev=null){
     }
 }
 
-$maze=new graphic(65,65);
+$maze=new Graphic(65,65);
 $white=$maze->colorRgb(255);
 go(1,1,$maze,$white);
 

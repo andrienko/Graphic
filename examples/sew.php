@@ -1,7 +1,7 @@
 <?php
 include('../classes/Graphic.php');
 
-$pattern=new graphic(4,4);
+$pattern=new Graphic(4,4);
 
 $pattern->line(1,0,1,1,$pattern->colorRgb(255));
 $pattern->line(0,2,1,2);

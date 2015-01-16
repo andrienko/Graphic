@@ -1,16 +1,16 @@
-<?
-namespace gearbox;
-include('../core/gears.php');
-$cs=32;
-$matrix=new graphic($cs,$cs);
+<?php
+include('../classes/Graphic.php');
 
-//$matrix->rectangle(0,0,$cs,$cs,$matrix->colorRgb(255),false);
+$cs=16;
+$matrix=new Graphic($cs,$cs);
 
-$letters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 _.,?!()-:/<>=+*$&%;\"''";
+//$matrix->rectangle(0,0,$cs,$cs,$matrix->colorRgb(40),false);
+
+$letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 _.,?!()-:/<>=+*$&%;\"''";
 $lx=0;
 $ly=0;
-$c=32;
-$cy=256;
+$c=64;
+$cy=64;
 $matrix->tile($c,$cy);
 
 $matrix->colorRgb(255);
@@ -33,9 +33,9 @@ function getNext(){
 }
 
 $l=0;
-$t=27;
-$fs=22;
-$f='fonts/sharetech.ttf';
+$t=14;
+$fs=11;
+$f='../assets/sharetech.ttf';
 for($y=0;$y<$cy;$y++){
     for($x=0;$x<$c;$x++){
         $matrix->string(getNext(),$cs*$x+$l,$y*$cs+$t,$fs,null,$f);
