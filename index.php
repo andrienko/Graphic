@@ -10,6 +10,9 @@
     foreach(array_diff(scandir('examples'),array('.','..')) as $file) {
         echo("<li><a href=\"examples/$file\">$file</a></li>");
     }
+
+    $i = imagecreatetruecolor(512,512);
+
 ?>
 </ul>
 </body>

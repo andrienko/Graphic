@@ -13,6 +13,7 @@ define('EFFECT_RIPPLE',256);
  * Lame graphic class
  *  A part of gearbox framework.
  *  used mainly for captcha generation and thumbnail creation
+ * TODO: Check GIF
  */
 
 class Graphic{
@@ -70,7 +71,7 @@ class Graphic{
                 case IMAGETYPE_GIF:return imagecreatefromgif($filename);
                 case IMAGETYPE_JPEG:return imagecreatefromjpeg($filename);
                 case IMAGETYPE_PNG:return imagecreatefrompng($filename);
-                case IMAGETYPE_BMP:return imagecreatefrombmp($filename);
+                //case IMAGETYPE_BMP:return imagecreatefromwbmp($filename); TODO:Check bmp
                 default:throw new \Exception("File $filename is not a supported image file");
             }
         }
@@ -299,12 +300,13 @@ class Graphic{
     }
 
     /**
-     *
-     * @param $x1
+     * Draw a line
+     * @param int|array $x1 X1 coordinate or array of coordinates [x1,y1,x2,y2,x3,y3, ...]
      * @param null $y1
      * @param null $x2
      * @param null $y2
-     * @param null $color
+     * @param null $color Color. If you are using array - pass null to y1, x2 and y3.
+     * @return $this|void
      */
     function line($x1,$y1=null,$x2=null,$y2=null,$color=null){
         if(is_array($x1)){
@@ -326,45 +328,115 @@ class Graphic{
 
     }
 
+    /**
+     * Gets the RGB color
+     * @param $x
+     * @param $y
+     * @param null $index
+     * @return array
+     */
     function getPixelColor($x,$y,$index=null){
         $val=imagecolorsforindex($this->image,imagecolorat($this->image,$x,$y));
         if(isset($index))return $val[$index];
         else return $val;
     }
 
+    /**
+     * Get the color at offset.
+     * @param $x
+     * @param $y
+     * @return int
+     */
     function getPixel($x,$y){
         $this->color=imagecolorat($this->image,$x,$y);
         return $this->color;
     }
 
+    /**
+     * Set the color at offset (imagesetpixel)
+     * @param $x
+     * @param $y
+     * @param null $color
+     * @return $this
+     */
     function setPixel($x,$y,$color=null){
         imagesetpixel($this->image,$x,$y,isset($color)?$color:$this->color);
         return $this;
     }
 
+    /**
+     * Draw a polygon.
+     * @param array $points
+     * @param null $color
+     * @param null $pointlimit
+     * @param bool $filled
+     * @return $this
+     */
     function polygon($points,$color=null,$pointlimit=null,$filled=true){
         if($filled===true)imagefilledpolygon($this->image,$points,isset($pointlimit)?$pointlimit:count($points)/2,isset($color)?$color:$this->color);
         else imagepolygon($this->image,$points,isset($pointlimit)?$pointlimit:count($points)/2,isset($color)?$color:$this->color);
         return $this;
     }
 
+    /**
+     * Draw a curve through points
+     * @param $points
+     * @param null $color
+     * @param bool $filled
+     * @param float $tension
+     * @param int $steps
+     * @param null $pointlimit
+     * @return $this
+     */
     function curve($points,$color=null,$filled=false,$tension=0.5,$steps=20,$pointlimit=null){
         $points = self::cardinal_points($points,$tension,$steps);
         if($filled)$this->polygon($points,$color,$pointlimit,true);
         return $this->line($points,null,null,null,$color);
     }
 
+    /**
+     * Draw the rectangle
+     * @param $x1
+     * @param $y1
+     * @param $x2
+     * @param null $y2
+     * @param null $color
+     * @param bool $filled
+     */
     function rectangle($x1,$y1,$x2,$y2=null,$color=null,$filled=true){
         if($filled===true)imagefilledrectangle($this->image,$x1,$y1,$x2,isset($y2)?$y2:$y1+$x2-$x1,isset($color)?$color:$this->color);
         else imagerectangle($this->image,$x1,$y1,$x2,isset($y2)?$y2:$y1+$x2-$x1,isset($color)?$color:$this->color);
     }
 
+    /**
+     * Draw an arc
+     * @param $x
+     * @param $y
+     * @param $radius
+     * @param $radius2
+     * @param $start
+     * @param $end
+     * @param null $color
+     * @param bool $filled
+     * @return $this
+     */
     function arc($x,$y,$radius,$radius2,$start,$end,$color=null,$filled=true){
         if($filled===false)imagearc($this->image,$x,$y,$radius*2,isset($radius2)?$radius2*2:$radius*2,$start,$end,isset($color)?$color:$this->color);
         else imagefilledarc($this->image,$x,$y,$radius*2,isset($radius2)?$radius2*2:$radius*2,$start,$end,isset($color)?$color:$this->color,$filled===true?IMG_ARC_PIE:$filled);
         return $this;
     }
 
+    /**
+     * Draw regular polygon
+     * @param $x
+     * @param $y
+     * @param int $radius
+     * @param int $sides
+     * @param null $color
+     * @param int $angle
+     * @param bool $filled
+     * @return $this
+     */
     function polygonRegular($x,$y,$radius=10,$sides=5,$color=null,$angle=0,$filled=true){
         $points = array();
         for($a = 0;$a <= 360; $a += 360/$sides){
@@ -374,6 +446,16 @@ class Graphic{
         return $this;
     }
 
+    /**
+     * Output text
+     * @param $text
+     * @param int $x
+     * @param null $y
+     * @param int $fontsize
+     * @param null $color
+     * @param null $fontfile
+     * @param int $angle
+     */
     function string($text,$x=1,$y=null,$fontsize=1,$color=null,$fontfile=null,$angle=0){//TODO: Add unicode
         if(!isset($y)){
             $y=$this->text_y;
@@ -385,16 +467,40 @@ class Graphic{
         else imagestring($this->image,$fontsize,$x,$y,$text,isset($color)?$color:$this->color);
     }
 
+    /**
+     * apply imagefilter
+     * @param $filter
+     * @param null $arg1
+     * @param null $arg2
+     * @param null $arg3
+     * @param null $arg4
+     */
     function filter($filter,$arg1=null,$arg2=null,$arg3=null,$arg4=null){
         imagefilter($this->image,$filter,$arg1,$arg2,$arg3,$arg4);//TODO: Fix errors on excess parameters
     }
 
+    /**
+     * Copy 
+     * @param Graphic $source
+     * @param $dst_x
+     * @param $dst_y
+     * @param $src_x1
+     * @param $src_y1
+     * @param $src_x2
+     * @param $src_y2
+     */
     function copy(graphic $source,$dst_x,$dst_y,$src_x1,$src_y1,$src_x2,$src_y2){
         imagecopy($this->image,$source->image,$dst_x,$dst_y,$src_x1,$src_y1,$src_x2-$src_x1,$src_y2-$src_y1);
     }
 
     // -- Transformations section
 
+    /**
+     * Apply one of EFFECT_ effects
+     * @param $effect
+     * @param null $arg1
+     * @param null $arg2
+     */
     function effect($effect,$arg1=null,$arg2=null){
         if($effect&EFFECT_EMBOSS)
             imageconvolution($this->image, array(array(2, 0, 0), array(0, -1, 0), array(0, 0, -1)), 1, 127);
@@ -432,7 +538,13 @@ class Graphic{
         }
     }
 
-
+    /**
+     * Change size with rescaling
+     * @param null $width
+     * @param null $height
+     * @param bool $allow_rescale
+     * @throws Exception
+     */
     function resize($width=null,$height=null,$allow_rescale=true){
         if(!isset($width) && !isset($height))throw new \Exception("You must specify width and/or height for resize.");
         if(!isset($height))$height=($width/$this->width)*$this->height;
@@ -455,17 +567,34 @@ class Graphic{
 
     }
 
+    /**
+     * Repeat image as a x*y tile.
+     * @param int $x
+     * @param int $y
+     */
     function tile($x,$y=null){
         if(!isset($y))$y=$x;
         $this->image=$this->repeat($this->image,$x,$y);
         $this->updateSize();
     }
 
+    /**
+     * Crop the image
+     * @param $x1
+     * @param $y1
+     * @param $x2
+     * @param $y2
+     */
     function crop($x1,$y1,$x2,$y2){
         $this->image=$this->cut($this->image,$x1,$y1,$x2,$y2);
         $this->updateSize();
     }
 
+    /**
+     * Cyclically offset an image
+     * @param $x
+     * @param null $y
+     */
     function offset($x,$y=null){
         if(!isset($y))$y=$x;
         while($x>=$this->width)$x-=$this->width;
@@ -476,7 +605,16 @@ class Graphic{
         $this->image=$this->shift($this->image,$x,$y);
     }
 
-
+    /**
+     * Load an image and lay it above graphic
+     * @param $filename
+     * @param int $x
+     * @param int $y
+     * @param null $width
+     * @param null $height
+     * @param null $angle
+     * @throws Exception
+     */
     function addImage($filename,$x=0,$y=0,$width=null,$height=null,$angle=null){
         $temp=$this->imageFromFile($filename);
         if(isset($width) && isset($height))$temp=$this->resample($temp,$width,$height);
@@ -487,32 +625,45 @@ class Graphic{
 
     // -- Output section
 
-    function outputJpg($filename=null,$quality=100){
+    function outputJpg($filename=null,$quality=100,$setHeader=true){
         if(!isset($filename) | $filename==""){
-            header('Content-Type: image/jpeg');
+            if($setHeader)header('Content-Type: image/jpeg');
             imagejpeg($this->image,null,$quality);
         }
         else imagejpeg($this->image,$filename,$quality);
 
     }
 
-    function outputPng($filename=null,$quality=null,$filters=null){
+    function outputPng($filename=null,$quality=null,$filters=null,$setHeader=true){
         if(!isset($filename) | $filename==""){
-            header ('Content-Type: image/png');
+            if($setHeader)header ('Content-Type: image/png');
             imagepng($this->image,null,$quality,$filters);
         }
         imagepng($this->image,$filename,$quality,$filters);
     }
 
-    function outputGif($filename=null){
+    function outputGif($filename=null,$setHeader=true){
         if(!isset($filename) | $filename==""){
-            header('Content-Type: image/gif');
+            if($setHeader)header('Content-Type: image/gif');
             imagegif($this->image);
         }
         else imagegif($this->image,$filename);
-
     }
 
-    //TODO: base64 output
+    function getBase64Jpg($append_data=true,$quality=100){
+        ob_start();
+        $this->outputJpg(null,$quality,false);
+        $image_data = base64_encode(ob_get_clean());
+        if($append_data) $image_data = 'data:image/jpeg;base64,'.$image_data;
+        return $image_data;
+    }
+
+    function getBase64Png($append_data=true,$quality=null,$filters=null){
+        ob_start();
+        $this->outputPng(null,$quality,null,false);
+        $image_data = base64_encode(ob_get_clean());
+        if($append_data) $image_data = 'data:image/png;base64,'.$image_data;
+        return $image_data;
+    }
 
 }
