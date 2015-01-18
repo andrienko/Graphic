@@ -42,11 +42,11 @@ function go($x,$y,Graphic $maze,$white,$prev=null){
     }
 }
 
-$maze=new Graphic(65,65);
+$maze=new Graphic(33,33);
 $white=$maze->colorRgb(255);
-go(1,1,$maze,$white);
+go(3,3,$maze,$white);
 
-$maze->resize(512,512,true);
+$maze->resize(330,330,true);
 $maze->outputJpg(null,100);
 
 
